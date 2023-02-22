@@ -8,13 +8,10 @@ import ca.mcgill.purposeful.dao.URLRepository;
 import ca.mcgill.purposeful.exception.GlobalException;
 import ca.mcgill.purposeful.model.Domain;
 import ca.mcgill.purposeful.model.Idea;
-import ca.mcgill.purposeful.model.RegularUser;
 import ca.mcgill.purposeful.model.Technology;
 import ca.mcgill.purposeful.model.Topic;
 import ca.mcgill.purposeful.model.URL;
 import jakarta.transaction.Transactional;
-
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -31,8 +28,8 @@ import org.springframework.stereotype.Service;
 public class IdeaService {
 
   /*
-   * CRUD repos
-   */
+   CRUD repos
+  */
 
   @Autowired
   IdeaRepository ideaRepository;
@@ -50,8 +47,8 @@ public class IdeaService {
   URLRepository urlRepository;
 
   /*
-   * Service functions
-   */
+   Service functions
+  */
 
   /**
    * Get an idea by its UUID
@@ -64,42 +61,37 @@ public class IdeaService {
   public Idea getIdeaById(String uuid) {
 
     if (uuid == null || uuid.isEmpty()) {
-      throw new GlobalException(HttpStatus.BAD_REQUEST,
-          "Please enter a valid UUID. UUID cannot be empty.");
+      throw new GlobalException(
+          HttpStatus.BAD_REQUEST, "Please enter a valid UUID. UUID cannot be empty.");
     }
 
     Idea idea = ideaRepository.findIdeaById(uuid);
 
     if (idea == null) {
-      throw new GlobalException(HttpStatus.NOT_FOUND,
-          "Idea with UUID " + uuid + " does not exist.");
+      throw new GlobalException(
+          HttpStatus.NOT_FOUND, "Idea with UUID " + uuid + " does not exist.");
     }
 
     return idea;
   }
 
-  // TODO: For the second sprint, we will implement a recommendations engine to
-  // sort the ideas!
+  // TODO: For the second sprint, we will implement a recommendations engine to sort the ideas!
+
   /**
-   * Get all ideas with a set of domain names, topic names, and technology names.
-   * For now, we can
-   * just return all ideas upon a (null, null, null) call. Currently just sorts
-   * from newest to
+   * Get all ideas with a set of domain names, topic names, and technology names. For now, we can
+   * just return all ideas upon a (null, null, null) call. Currently just sorts from newest to
    * oldest.
    *
-   * @param domainNames The list of domain names that the idea must have one of
-   *                    (null if no filter)
-   * @param topicNames  The list of topic names that the idea must have one of
-   *                    (null if no filter)
-   * @param techNames   The list of technology names that the idea must have one
-   *                    of (null if no
+   * @param domainNames The list of domain names that the idea must have one of (null if no filter)
+   * @param topicNames  The list of topic names that the idea must have one of (null if no filter)
+   * @param techNames   The list of technology names that the idea must have one of (null if no
    *                    filter)
    * @return The set of ideas that match all the criteria
    * @author Wassim Jabbour
    */
   @Transactional
-  public List<Idea> getIdeasByAllCriteria(List<String> domainNames, List<String> topicNames,
-      List<String> techNames) {
+  public List<Idea> getIdeasByAllCriteria(
+      List<String> domainNames, List<String> topicNames, List<String> techNames) {
 
     // Retrieve all ideas
     Iterable<Idea> allIdeas = ideaRepository.findAll();
@@ -120,11 +112,9 @@ public class IdeaService {
     for (Idea idea : allIdeasList) {
 
       // 1) Check whether the idea contains 1 of the required domains
-      // We do this by checking if the required domain list contains at least 1 of the
-      // idea's
+      // We do this by checking if the required domain list contains at least 1 of the idea's
       // domains
-      // The following boolean will be set to true if the required domain list
-      // contains at least 1
+      // The following boolean will be set to true if the required domain list contains at least 1
       // domain of our idea
       boolean contains = false;
       for (Domain ideaDomain : idea.getDomains()) {
@@ -168,7 +158,8 @@ public class IdeaService {
 
     // Check whether any ideas match the criteria
     if (filteredIdeas.isEmpty()) {
-      throw new GlobalException(HttpStatus.NOT_FOUND,
+      throw new GlobalException(
+          HttpStatus.NOT_FOUND,
           "No ideas match the given criteria. Please try again with different criteria.");
     }
 
@@ -180,65 +171,11 @@ public class IdeaService {
     return filteredIdeas;
   }
 
-  /**
-   * Create an idea
-   *
-   * @param idea       title
-   * @param idea       purpose
-   * @param idea       description
-   * @param paid       status of idea
-   * @param progress   status of idea
-   * @param visibility of an idea
-   * @param domains    to which the idea belongs
-   * @param the        technologies used to achieve the idea
-   * @param the        topics of the idea
-   * @param supporting images for idea
-   * @param icon       for idea
-   * @return The newly created idea
-   * @author Adam Kazma
-   */
   @Transactional
-  public Idea createIdea(String title, String purpose, String description, boolean isPaid,
-      boolean inProgress, boolean isPrivate, List<String> domainIds, List<String> techIds,
-      List<String> topicIds, List<String> imgUrlIds, String iconUrlId, RegularUser user) {
-    // Check parameters are not empty
-    checkEmptyAttributeViolation(title);
-    checkEmptyAttributeViolation(description);
-    checkEmptyAttributeViolation(purpose);
-
-    // Check to see if all given objects exist
-    Set<Domain> domains = checkDomains(domainIds);
-    Set<Technology> techs = checkTechs(techIds);
-    Set<Topic> topics = checkTopics(topicIds);
-    List<URL> imgUrls = checkImgURLS(imgUrlIds);
-    URL iconUrl = checkURL(iconUrlId);
-    Idea idea = new Idea();
-    idea.setDate(Date.from(Instant.now()));
-    idea.setTitle(title);
-    idea.setPurpose(purpose);
-    idea.setDescription(description);
-    idea.setPaid(isPaid);
-    idea.setInProgress(inProgress);
-    idea.setPrivate(isPrivate);
-    idea.setDomains(domains);
-    idea.setTechs(techs);
-    idea.setTopics(topics);
-    idea.setIconUrl(iconUrl);
-    idea.setSupportingImageUrls(imgUrls);
-    idea.setUser(user);
-
-    // Save to repository
-    ideaRepository.save(idea);
-
-    return idea;
-  }
-
-  @Transactional
-  public Idea modifyIdea(String id, String title, Date date, String purpose, String descriptions, boolean isPaid,
-      boolean inProgress, boolean isPrivate, List<String> domainIds, List<String> techIds, List<String> topicIds,
-      List<String> imgUrlIds, String iconUrlId) {
-    // Retrieve idea (we assume that no user can access an idea they don't own
-    // because of frontend)
+  public Idea modifyIdea(String id, String title, Date date, String purpose, String descriptions,
+      boolean isPaid, boolean inProgress, boolean isPrivate, List<String> domainIds,
+      List<String> techIds, List<String> topicIds, List<String> imgUrlIds, String iconUrlId) {
+    // Retrieve idea (we assume that no user can access an idea they don't own because of frontend)
     Idea idea = getIdeaById(id);
 
     // Check to make sure essential fields are not empty
@@ -314,7 +251,6 @@ public class IdeaService {
           throw new GlobalException(HttpStatus.BAD_REQUEST,
               "You are attempting to link your idea to an object that does not exist");
         }
-        domains.add(domain);
       }
     }
     return domains;
@@ -333,7 +269,6 @@ public class IdeaService {
           throw new GlobalException(HttpStatus.BAD_REQUEST,
               "You are attempting to link your idea to an object that does not exist");
         }
-        techs.add(tech);
       }
     }
     return techs;
@@ -352,7 +287,6 @@ public class IdeaService {
           throw new GlobalException(HttpStatus.BAD_REQUEST,
               "You are attempting to link your idea to an object that does not exist");
         }
-        topics.add(topic);
       }
     }
     return topics;
@@ -371,13 +305,27 @@ public class IdeaService {
 
   public URL checkURL(String urlId) {
     URL url = null;
-    if (urlId != null) {
+    try {
       url = urlRepository.findURLById(urlId);
-      if (url == null) {
-        throw new GlobalException(HttpStatus.BAD_REQUEST,
-            "You are attempting to link your idea to an object that does not exist");
-      }
+    } catch (Exception e) {
+      throw new GlobalException(HttpStatus.BAD_REQUEST,
+          "You are attempting to link your idea to an object that does not exist");
     }
     return url;
+  }
+
+  /**
+   * Remove a posted idea from the system alongside its reaction and URLs
+   *
+   * @param uuid the idea's uuid
+   * @author Athmane Benarous
+   */
+  @Transactional
+  public void removeIdeaById(String uuid) {
+    // validate idea by getting it
+    this.getIdeaById(uuid);
+
+    // remove idea
+    ideaRepository.deleteById(uuid);
   }
 }
