@@ -109,7 +109,7 @@ public class AppUserController {
       String firstname = appUserDto.getFirstname();
       String lastname = appUserDto.getLastname();
   
-      // Register the user
+      // Modify the user's names
       AppUserDto registeredUser = DtoUtility.convertToDto(
           appUserService.modifyUserNames(email, firstname, lastname));
   
@@ -135,7 +135,7 @@ public class AppUserController {
       String email = appUserDto.getEmail();
       String password = appUserDto.getPassword();
   
-      // Register the user
+      // Modify  the user's password
       AppUserDto registeredUser = DtoUtility.convertToDto(
           appUserService.modifyPassword(email, password));
   
@@ -175,7 +175,7 @@ public class AppUserController {
     String firstname = appUserDto.getFirstname();
     String lastname = appUserDto.getLastname();
 
-    // Register the user
+    // Modify the moderator's names
     AppUserDto registeredUser = DtoUtility.convertToDto(
         moderatorService.modifyModerator(email, firstname, lastname));
 
@@ -201,7 +201,7 @@ public class AppUserController {
       String email = appUserDto.getEmail();
       String password = appUserDto.getPassword();
   
-      // Register the user
+      // Modify  the moderator's password
       AppUserDto registeredUser = DtoUtility.convertToDto(
           moderatorService.modifyPassword(email, password));
   
