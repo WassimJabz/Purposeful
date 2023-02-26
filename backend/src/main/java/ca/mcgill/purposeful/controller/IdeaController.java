@@ -5,23 +5,33 @@ import ca.mcgill.purposeful.dto.IdeaRequestDTO;
 import ca.mcgill.purposeful.dto.SearchFilterDTO;
 import ca.mcgill.purposeful.exception.GlobalException;
 import ca.mcgill.purposeful.model.Idea;
+import ca.mcgill.purposeful.model.RegularUser;
 import ca.mcgill.purposeful.service.IdeaService;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
-/** API for demonstrating how permissions work for access to endpoints */
+/**
+ * API for demonstrating how permissions work for access to endpoints
+ */
 @RestController
 @RequestMapping({"api/idea", "api/idea/"})
 public class IdeaController {
 
-  @Autowired IdeaService ideaService;
+  @Autowired
+  IdeaService ideaService;
 
   @GetMapping("{id}")
   @PreAuthorize("hasAnyAuthority('User', 'Moderator', 'Owner')")
@@ -135,6 +145,18 @@ public class IdeaController {
   @DeleteMapping({"/{id}", "/{id}/"})
   @PreAuthorize("hasAnyAuthority('User', 'Moderator', 'Owner')")
   public ResponseEntity<String> removeIdea(@PathVariable String id) {
+    // authenticate user
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+    String email = authentication.getName();
+
+    // check if user is the owner of the idea
+    RegularUser owner = ideaService.getIdeaById(id).getUser();
+
+    if (!owner.getAppUser().getEmail().equals(email)) {
+      throw new GlobalException(HttpStatus.BAD_REQUEST, "User not authorized");
+    }
+
     // call service layer
     ideaService.removeIdeaById(id);
     // return response status with confirmation message
