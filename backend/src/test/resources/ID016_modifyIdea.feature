@@ -41,62 +41,73 @@ Feature: Modify Idea
 	# Normal Flow
 
   Scenario Outline: Successfully modify an idea
-    When the user requests to modify the field "<field>" to become new value "<new_value>" for idea with id "<id>"
+    When the user with user id <user_id> requests to modify the field "<field>" to become new value "<new_value>" for idea with id "<id>"
     Then the idea with id "<id>" will have value "<new_value>" for the field "<field>"
 
     Examples:
-      | id | field       | new_value      |
-      | 18 | title       | Health App     |
-      | 18 | purpose     | For customer   |
-      | 19 | description | new extra info |
-      | 18 | isPaid      | True           |
-      | 18 | inProgress  | True           |
-      | 19 | isPrivate   | True           |
-      | 18 | domains     | 3              |
-      | 19 | topics      | 7              |
-      | 18 | techs       | 8              |
-      | 19 | image URLs  | 13             |
-      | 18 | icon URL    | 13             |
+      | id | field       | new_value      | user_id |
+      | 18 | title       | Health App     | 0       |
+      | 18 | purpose     | For customer   | 0       |
+      | 19 | description | new extra info | 0       |
+      | 18 | isPaid      | True           | 0       |
+      | 18 | inProgress  | True           | 0       |
+      | 19 | isPrivate   | True           | 0       |
+      | 18 | domains     | 3              | 0       |
+      | 19 | topics      | 7              | 0       |
+      | 18 | techs       | 8              | 0       |
+      | 19 | image URLs  | 13             | 0       |
+      | 18 | icon URL    | 13             | 0       |
 
 	# Alternate Flow
 
   Scenario Outline: Successfully modify the idea with an empty field that can be empty
-    When the user requests to modify the field "<field>" to become empty for idea with id "<id>"
+    When the user with user id <user_id> requests to modify the field "<field>" to become empty for idea with id "<id>"
     Then the idea with id "<id>" will have empty for the field "<field>"
 
     Examples:
-      | id | field      |
-      | 18 | domains    |
-      | 18 | topics     |
-      | 19 | techs      |
-      | 19 | image URLs |
+      | id | field      | user_id |
+      | 18 | domains    | 0       |
+      | 18 | topics     | 0       |
+      | 19 | techs      | 0       |
+      | 19 | image URLs | 0       |
 
 	# Error Flow
 
   Scenario Outline: Unsuccessfully modify the idea with an empty field that cannot be empty
-    When the user requests to modify the field "<field>" to become empty for idea with id "<id>"
+    When the user with user id <user_id> requests to modify the field "<field>" to become empty for idea with id "<id>"
     Then the idea with id "<id>" will have value "<old_value>" for the field "<field>"
     Then the error message "<error>" will be thrown with status code "<Http_status>"
 
     Examples:
-      | id | field   | old_value        | error                                 | Http_status |
-      | 18 | title   | Music generation | Necessary fields have been left empty | 400         |
-      | 18 | purpose | Open source      | Necessary fields have been left empty | 400         |
+      | id | field       | old_value        | user_id | error                                 | Http_status |
+      | 18 | title       | Music generation | 0       | Necessary fields have been left empty | 400         |
+      | 18 | purpose     | Open source      | 0       | Necessary fields have been left empty | 400         |
+      | 19 | description | extra info2      | 0       | Necessary fields have been left empty | 400         |
+      | 19 | description | extra info2      | 0       | Necessary fields have been left empty | 400         |
 
 	# Error Flow
 
   Scenario Outline: (Error Flow) Unsuccessfully modify an idea with a non-existing object
-    When the user requests to modify the field "<field>" to become new value "<new_value>" for idea with id "<id>"
+    When the user with user id <user_id> requests to modify the field "<field>" to become new value "<new_value>" for idea with id "<id>"
     Then the idea with id "<id>" will have value "<old_value>" for the field "<field>"
     Then the error message "<error>" will be thrown with status code "<Http_status>"
 
     Examples:
-      | id | field      | old_value | new_value | error                                                                 | Http_status |
-      | 18 | domains    | 2         | 15        | You are attempting to link your idea to an object that does not exist | 400         |
-      | 19 | topics     | 6         | 20        | You are attempting to link your idea to an object that does not exist | 400         |
-      | 18 | techs      | 8,9       | 25        | You are attempting to link your idea to an object that does not exist | 400         |
-      | 19 | image URLs | 12        | 1         | You are attempting to link your idea to an object that does not exist | 400         |
-      | 18 | icon URL   | 17        | 2         | You are attempting to link your idea to an object that does not exist | 400         |
+      | id | field      | old_value | new_value | user_id | error                                                                 | Http_status |
+      | 18 | domains    | 2         | 15        | 0       | You are attempting to link your idea to an object that does not exist | 400         |
+      | 19 | topics     | 6         | 20        | 0       | You are attempting to link your idea to an object that does not exist | 400         |
+      | 18 | techs      | 8,9       | 25        | 0       | You are attempting to link your idea to an object that does not exist | 400         |
+      | 19 | image URLs | 12        | 1         | 0       | You are attempting to link your idea to an object that does not exist | 400         |
+      | 18 | icon URL   | 17        | 2         | 0       | You are attempting to link your idea to an object that does not exist | 400         |
 
+  # Error Flow
 
+  Scenario Outline: (Error Flow) Unsuccessfully modify an idea with user that is not owner of the idea
+    When the user with user id <user_id> requests to modify the field "<field>" to become new value "<new_value>" for idea with id "<id>"
+    Then the error message "<error>" will be thrown with status code "<Http_status>"
+    
+    Examples: 
+      | id | field       | new_value      | user_id | error                              | Http_status |
+      | 18 | title       | Health App     | 1       | You are not the owner of this idea | 400         |
+      | 18 | purpose     | For customer   | 1       | You are not the owner of this idea | 400         |
 
