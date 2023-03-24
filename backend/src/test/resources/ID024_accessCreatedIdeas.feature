@@ -1,27 +1,27 @@
 Feature: Access Created Ideas
   As a user who has created an idea, I want to be able to access all the ideas I have created so that I can keep track of them and their associated collaboration requests
   Background:
-    Given the database contains the following user accounts:
+    Given the database contains the following user account info:
       | id | firstname | lastname | email                | password         |
       | 0  | User      | Steve    | user.steve@gmail.com | SteveIsAwesome01 |
       | 1  | User      | Bob      | user.bob@gmail.com   | BobIsAwesome01   |
       | 2  | User      | Joe      | user.joe@gmail.com   | JoeIsAwesome01   |
-    And the database contains the following domain objects:
+    And the database contains the following domain object info:
       | id | name       |
       | 3  | Software   |
       | 4  | Computer   |
       | 5  | Electrical |
-    And the database contains the following topic objects:
+    And the database contains the following topic object info:
       | id | name              |
       | 6  | Frontend Dev      |
       | 7  | Backend Dev       |
-    And the database contains the following tech objects:
+    And the database contains the following tech object info:
       | id | name   |
       | 8  | Python |
       | 9  | Java   |
       | 10 | React  |
       | 11 | C      |
-    And the database contains the following URL objects:
+    And the database contains the following URL object info:
       | id | url           |
       | 12 | something.com |
       | 13 | another.com   |
@@ -29,7 +29,7 @@ Feature: Access Created Ideas
       | 15 | keepitup.com  |
       | 16 | interest.com  |
       | 17 | bestteam.com  |
-    And the database contains the following idea objects:
+    And the database contains the following idea object info:
       | id | title            | purpose      | description | domains | topics | techs | supportingImageUrls | iconUrl | isPaid | isInProgress | isPrivate | user |
       | 18 | Music generation | Open source  | extra info1 | 2       | 6      | 8,9   | 16                  | 17      | false  | false        | false     | 0    |
       | 19 | Techno boom      | Techno music | extra info2 | 2       | 7      | 10    | 12                  | 15      | false  | false        | false     | 0    |
@@ -52,7 +52,7 @@ Feature: Access Created Ideas
     # Error Flow
 
     Scenario Outline: Unsuccessfully access created ideas if logged out
-        When the user requests to access all ideas associated to them
+        When the logged out user requests to access all ideas associated to them
         Then the status code "<Http_status>" and error "<message>" will be received
 
         Examples:
