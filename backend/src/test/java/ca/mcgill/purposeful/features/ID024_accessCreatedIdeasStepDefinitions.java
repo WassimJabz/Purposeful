@@ -72,27 +72,27 @@ public class ID024_accessCreatedIdeasStepDefinitions {
         cucumberUtil.createAndSaveRegularUsersFromTable(dataTable, idMap);
     }
 
-    @And("the database contains the following domain object info:")
+    @Given("the database contains the following domain object info:")
     public void theDatabaseContainsTheFollowingDomainObjectInfo(DataTable dataTable) {
         cucumberUtil.createAndSaveDomainsFromTable(dataTable, idMap);
     }
 
-    @And("the database contains the following topic object info:")
+    @Given("the database contains the following topic object info:")
     public void theDatabaseContainsTheFollowingTopicObjectInfo(DataTable dataTable) {
         cucumberUtil.createAndSaveTopicsFromTable(dataTable, idMap);
     }
 
-    @And("the database contains the following tech object info:")
+    @Given("the database contains the following tech object info:")
     public void theDatabaseContainsTheFollowingTechObjectInfo(DataTable dataTable) {
         cucumberUtil.createAndSaveTechsFromTable(dataTable, idMap);
     }
 
-    @And("the database contains the following URL object info:")
+    @Given("the database contains the following URL object info:")
     public void theDatabaseContainsTheFollowingURLObjectInfo(DataTable dataTable) {
         cucumberUtil.createAndSaveURLsFromTable(dataTable, idMap);
     }
 
-    @And("the database contains the following idea object info:")
+    @Given("the database contains the following idea object info:")
     public void theDatabaseContainsTheFollowingIdeaObjectInfo(DataTable dataTable) {
         cucumberUtil.createAndSaveIdeasFromTable(dataTable, idMap);
     }
@@ -123,10 +123,10 @@ public class ID024_accessCreatedIdeasStepDefinitions {
 
         try {
             this.response =
-                    client.exchange("/api/idea/created/", HttpMethod.POST, requestEntity, IdeaDTO.class);
+                    client.exchange("/api/idea/created/", HttpMethod.GET, requestEntity, IdeaDTO.class);
         } catch (Exception e) {
             this.response =
-                    client.exchange("/api/idea/created/", HttpMethod.POST, requestEntity, String.class);
+                    client.exchange("/api/idea/created/", HttpMethod.GET, requestEntity, String.class);
         }
     }
 
