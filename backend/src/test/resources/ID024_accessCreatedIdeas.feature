@@ -52,10 +52,10 @@ Feature: Access Created Ideas
     # Error Flow
 
     Scenario Outline: Unsuccessfully access created ideas if logged out
-        When the logged out user requests to access all ideas associated to them
+        When the user requests to access all ideas associated to them
         Then the status code "<Http_status>" and error "<message>" will be received
 
         Examples:
-        | Http_status   | message                    |
-        | 401           | User is not authenticated. |
+          | Http_status | message                    |
+          | 401         | User is not authenticated. |
     

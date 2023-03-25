@@ -1,6 +1,7 @@
 package ca.mcgill.purposeful.features;
 
 import ca.mcgill.purposeful.dao.*;
+import ca.mcgill.purposeful.dto.IdeaDTO;
 import ca.mcgill.purposeful.dto.IdeaRequestDTO;
 import ca.mcgill.purposeful.model.*;
 import ca.mcgill.purposeful.util.CucumberUtil;
@@ -61,6 +62,7 @@ public class ID024_accessCreatedIdeasStepDefinitions {
     private ResponseEntity<?> response;
 
     private HttpHeaders authHeader;
+    private String userEmail;
     private String jwtToken;
     private Map<String, String> idMap = new HashMap<String, String>();
     private String message;
@@ -107,30 +109,42 @@ public class ID024_accessCreatedIdeasStepDefinitions {
                 client.exchange("/api/login", HttpMethod.POST, requestEntity, String.class);
         assertEquals(HttpStatus.OK, response.getStatusCode()); // Making sure the login was successful
         jwtToken = response.getBody().toString(); // Extract the token for future requests
+        userEmail = email;
         assertNotNull(jwtToken); // Ensure the token is not null
     }
 
     @When("the user requests to access all ideas associated to them")
     public void theUserRequestsToAccessAllIdeasAssociatedToThem() {
+        this.authHeader = cucumberUtil.bearerAuthHeader(jwtToken);
+        this.authHeader.setContentType(MediaType.APPLICATION_JSON);
+        this.authHeader.setAccessControlAllowOrigin("*");
 
+        HttpEntity<?> requestEntity = new HttpEntity<>(this.authHeader);
+
+        try {
+            this.response =
+                    client.exchange("/api/idea/created/", HttpMethod.POST, requestEntity, IdeaDTO.class);
+        } catch (Exception e) {
+            this.response =
+                    client.exchange("/api/idea/created/", HttpMethod.POST, requestEntity, String.class);
+        }
     }
 
     @Then("then all ideas with ids {string} will be provided")
-    public void thenAllIdeasWithIdsWillBeProvided(String arg0) {
+    public void thenAllIdeasWithIdsWillBeProvided(String ideaIds) {
+        List<String> tableIds = new ArrayList<>();
+        String[] ids = ideaIds.split(",");
+        for(String id: ids){
+            String email = ideaRepository.findIdeaById(idMap.get(id)).getUser().getAppUser().getEmail();
+            assertEquals(userEmail, email);
+        }
 
-    }
-
-    @When("the logged out user requests to access all ideas associated to them")
-    public void theLoggedOutUserRequestsToAccessAllIdeasAssociatedToThem() {
 
     }
 
     @Then("the status code {string} and error {string} will be received")
-    public void theStatusCodeAndErrorWillBeReceived(String arg0, String arg1) {
-
-    }
-
-    @When("the user requests to access all ideas associated to them using email {string}")
-    public void theUserRequestsToAccessAllIdeasAssociatedToThemUsingEmail(String arg0) {
+    public void theStatusCodeAndErrorWillBeReceived(String status_code, String err_message) {
+        assertEquals(err_message, this.response.getBody());
+        assertEquals(status_code, Integer.toString(this.response.getStatusCode().value()));
     }
 }

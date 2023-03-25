@@ -169,6 +169,8 @@ public class IdeaController {
 
     List<Idea> createdIdeas = ideaService.getCreatedIdeas(requestEmail);
 
+    List<IdeaDTO> ideaDTOs = IdeaDTO.convertToDto(createdIdeas);
+
     return ResponseEntity.status(HttpStatus.OK).body(IdeaDTO.convertToDto(createdIdeas));
   }
 }
