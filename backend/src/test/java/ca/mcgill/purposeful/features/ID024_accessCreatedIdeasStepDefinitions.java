@@ -4,8 +4,11 @@ import ca.mcgill.purposeful.dao.*;
 import ca.mcgill.purposeful.dto.IdeaDTO;
 import ca.mcgill.purposeful.dto.IdeaRequestDTO;
 import ca.mcgill.purposeful.model.*;
+import ca.mcgill.purposeful.service.IdeaService;
 import ca.mcgill.purposeful.util.CucumberUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
@@ -21,6 +24,7 @@ import java.text.ParseException;
 import java.time.Instant;
 import java.util.*;
 
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -34,6 +38,9 @@ public class ID024_accessCreatedIdeasStepDefinitions {
 
     @Autowired
     private TestRestTemplate client;
+
+    @Autowired
+    private IdeaService ideaService;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -63,6 +70,7 @@ public class ID024_accessCreatedIdeasStepDefinitions {
 
     private HttpHeaders authHeader;
     private String userEmail;
+    ArrayList<IdeaDTO> responseIdeas;
     private String jwtToken;
     private Map<String, String> idMap = new HashMap<String, String>();
     private String message;
@@ -72,32 +80,32 @@ public class ID024_accessCreatedIdeasStepDefinitions {
         cucumberUtil.createAndSaveRegularUsersFromTable(dataTable, idMap);
     }
 
-    @Given("the database contains the following domain object info:")
+    @And("the database contains the following domain object info:")
     public void theDatabaseContainsTheFollowingDomainObjectInfo(DataTable dataTable) {
         cucumberUtil.createAndSaveDomainsFromTable(dataTable, idMap);
     }
 
-    @Given("the database contains the following topic object info:")
+    @And("the database contains the following topic object info:")
     public void theDatabaseContainsTheFollowingTopicObjectInfo(DataTable dataTable) {
         cucumberUtil.createAndSaveTopicsFromTable(dataTable, idMap);
     }
 
-    @Given("the database contains the following tech object info:")
+    @And("the database contains the following tech object info:")
     public void theDatabaseContainsTheFollowingTechObjectInfo(DataTable dataTable) {
         cucumberUtil.createAndSaveTechsFromTable(dataTable, idMap);
     }
 
-    @Given("the database contains the following URL object info:")
+    @And("the database contains the following URL object info:")
     public void theDatabaseContainsTheFollowingURLObjectInfo(DataTable dataTable) {
         cucumberUtil.createAndSaveURLsFromTable(dataTable, idMap);
     }
 
-    @Given("the database contains the following idea object info:")
+    @And("the database contains the following idea object info:")
     public void theDatabaseContainsTheFollowingIdeaObjectInfo(DataTable dataTable) {
         cucumberUtil.createAndSaveIdeasFromTable(dataTable, idMap);
     }
 
-    @Given("user with email {string} and password {string} is successfully logged in")
+    @And("user with email {string} and password {string} is successfully logged in")
     public void userWithEmailAndPasswordIsSuccessfullyLoggedIn(String email, String password) {
         HttpEntity<String> requestEntity =
                 new HttpEntity<>(cucumberUtil.basicAuthHeader(email, password));
@@ -121,30 +129,42 @@ public class ID024_accessCreatedIdeasStepDefinitions {
 
         HttpEntity<?> requestEntity = new HttpEntity<>(this.authHeader);
 
-        try {
+
+        if(this.authHeader != null){
             this.response =
-                    client.exchange("/api/idea/created/", HttpMethod.GET, requestEntity, IdeaDTO.class);
-        } catch (Exception e) {
+                    client.exchange("/api/idea/user/", HttpMethod.GET, requestEntity, ArrayList.class);
+
+            ObjectMapper mapper = new ObjectMapper();
+            responseIdeas = mapper.convertValue(response.getBody(), new TypeReference<ArrayList<IdeaDTO>>() {
+            });
+        } else {
             this.response =
-                    client.exchange("/api/idea/created/", HttpMethod.GET, requestEntity, String.class);
+                    client.exchange("/api/idea/user/", HttpMethod.GET, requestEntity, String.class);
         }
     }
 
     @Then("then all ideas with ids {string} will be provided")
     public void thenAllIdeasWithIdsWillBeProvided(String ideaIds) {
-        List<String> tableIds = new ArrayList<>();
-        String[] ids = ideaIds.split(",");
-        for(String id: ids){
-            String email = ideaRepository.findIdeaById(idMap.get(id)).getUser().getAppUser().getEmail();
-            assertEquals(userEmail, email);
+        if (ideaIds.isEmpty()){
+            assertTrue(responseIdeas.isEmpty());
+        }
+        else {
+            List<String> ideaIdsList = Arrays.asList(ideaIds.split(","));
+
+            assertEquals(ideaIdsList.size(), responseIdeas.size());
+
+            for (int i = 0; i < ideaIdsList.size(); i++) {
+                assertEquals(
+                        ideaService.getIdeaById(idMap.get(ideaIdsList.get(i))).getTitle(),
+                        responseIdeas.get(i).getTitle());
+            }
         }
 
 
     }
 
-    @Then("the status code {string} and error {string} will be received")
-    public void theStatusCodeAndErrorWillBeReceived(String status_code, String err_message) {
-        assertEquals(err_message, this.response.getBody());
+    @Then("the status code {string} unauthorized error will be received")
+    public void theStatusCodeUnauthorizedErrorWillBeReceived(String status_code) {
         assertEquals(status_code, Integer.toString(this.response.getStatusCode().value()));
     }
 }

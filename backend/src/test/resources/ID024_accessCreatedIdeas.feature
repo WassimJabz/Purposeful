@@ -31,10 +31,10 @@ Feature: Access Created Ideas
       | 17 | bestteam.com  |
     And the database contains the following idea object info:
       | id | title            | purpose      | description | domains | topics | techs | supportingImageUrls | iconUrl | isPaid | isInProgress | isPrivate | user |
-      | 18 | Music generation | Open source  | extra info1 | 2       | 6      | 8,9   | 16                  | 17      | false  | false        | false     | 0    |
-      | 19 | Techno boom      | Techno music | extra info2 | 2       | 7      | 10    | 12                  | 15      | false  | false        | false     | 0    |
+      | 18 | Music generation | Open source  | extra info1 | 2       | 6      | 8,9   | 14                  | 17      | false  | false        | false     | 0    |
+      | 19 | Techno boom      | Techno music | extra info2 | 2       | 7      | 10    | 12                  | 16      | false  | false        | false     | 0    |
       | 20 | Signal process   | Open source  | extra info3 | 2       | 6      | 9,10  | 15                  | 16      | false  | false        | false     | 1    |
-      | 21 | Art blog site    | Open source  | extra info4 | 2       | 7      | 11    | 13                  | 12      | true   | false        | true      | 1    |
+      | 21 | Art blog site    | Open source  | extra info4 | 2       | 7      | 11    | 13                  | 17      | true   | false        | true      | 1    |
 
     # Normal Flow
 
@@ -51,11 +51,7 @@ Feature: Access Created Ideas
 
     # Error Flow
 
-    Scenario Outline: Unsuccessfully access created ideas if logged out
+    Scenario: Unsuccessfully access created ideas if logged out
         When the user requests to access all ideas associated to them
-        Then the status code "<Http_status>" and error "<message>" will be received
-
-        Examples:
-          | Http_status | message                    |
-          | 401         | User is not authenticated. |
+        Then the status code "401" unauthorized error will be received
     
